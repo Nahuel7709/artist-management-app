@@ -94,3 +94,12 @@ export async function login(req: Request, res: Response) {
     .cookie("token", token, cookieOptions)
     .json({ id: user.id, name: user.name, email: user.email, role: user.role });
 }
+
+export async function me(_req: Request, res: Response) {
+  res.json(res.locals.user);
+}
+
+export function logout(_req: Request, res: Response) {
+  res.clearCookie("token", cookieOptions);
+  res.status(204).end();
+}
