@@ -1,11 +1,23 @@
-import { Button } from "@/components/ui/button";
+import { Route, Routes } from "react-router";
+import { GuestOnly } from "@/components/GuestOnly";
+import { RequireAuth } from "@/components/RequireAuth";
+import { LoginPage } from "@/pages/LoginPage";
+import { RegisterPage } from "@/pages/RegisterPage";
+import { HomePage } from "@/pages/HomePage";
+import { NotFoundPage } from "@/pages/NotFoundPage";
 
 function App() {
   return (
-    <>
-      <h1 className="text-2xl font-bold">Management App</h1>
-      <Button>Probar</Button>
-    </>
+    <Routes>
+      <Route element={<GuestOnly />}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Route>
+      <Route element={<RequireAuth />}>
+        <Route path="/" element={<HomePage />} />
+      </Route>
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
   );
 }
 
