@@ -71,3 +71,10 @@ Frontend (browser):
 - Frontend: the structure and logic come from my car-rental code (auth context, route guards, login and register flow). To avoid writing the same code again, Claude helped me adapt it to this project: it wrote the status-based error handling with Spanish messages, the fix for the new set-state-in-effect lint rule, the GuestOnly guard and the FormField component, and rebuilt the pages with shadcn following DESIGN.md. I set up the project (Vite, Tailwind, shadcn), decided how to handle the messages, and reviewed and tested every flow.
 - Design: Claude proposed the design system and made a visual mockup. I reviewed it and chose the options (sidebar, Spanish UI, shadcn with Base UI).
 - Documentation: Doing the readme.md
+
+
+## Review fixes
+
+- Broken JSON on `/auth/register` or `/auth/login` returned 500, and the error log printed the raw body, so a password could end up in the logs. Added an error middleware right after `express.json()` that catches the parse error, returns 400 "Invalid JSON" and does not log anything.
+- The FINANCE seed only checked the password length, so it could save an invalid email or name. I moved the register schema to `auth/authSchemas.ts` and the seed now validates with the same schema before the upsert. If the variables are invalid it stops and changes nothing.
+

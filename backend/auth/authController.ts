@@ -1,36 +1,10 @@
 import type { Request, Response } from "express";
-import * as z from "zod";
 import { prisma } from "../db/prisma.ts";
 import argon2 from "argon2";
 import { Prisma } from "../generated/prisma/client.ts";
 import { cookieOptions, JWT_SECRET } from "./config.ts";
 import jwt from "jsonwebtoken";
-
-const createUserSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(3, "Name has a minimum of 3 characters")
-    .max(50, "Name has a maximum of 50 characters"),
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .pipe(z.email("Email has to be a valid email")),
-  password: z
-    .string()
-    .min(8, "Password has a minimum of 8 characters")
-    .max(64, "Password has a maximum of 64 characters"),
-});
-
-const loginUserSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .pipe(z.email("Email has to be a valid email")),
-  password: z.string().max(64, "Password has a maximum of 64 characters"),
-});
+import { createUserSchema, loginUserSchema } from "./authSchemas.ts";
 
 export async function register(req: Request, res: Response) {
   const result = createUserSchema.safeParse(req.body);

@@ -1,24 +1,33 @@
 import "dotenv/config";
 import { prisma } from "../db/prisma.ts";
 import argon2 from "argon2";
+import { createUserSchema } from "../auth/authSchemas.ts";
 
 async function createUser() {
   const userName = process.env.FINANCE_NAME;
   const userEmail = process.env.FINANCE_EMAIL;
   const userPassword = process.env.FINANCE_PASSWORD;
 
+  const result = createUserSchema.safeParse({
+    name: userName,
+    email: userEmail,
+    password: userPassword,
+  });
+
   if (!userName || !userEmail || !userPassword) {
-    throw new Error("User seed is missing name, email or password variable");
+    throw new Error("Missing FINANCE_NAME, FINANCE_EMAIL or FINANCE_PASSWORD");
   }
 
-  if (userPassword.length < 8 || userPassword.length > 64) {
-    throw new Error("FINANCE_PASSWORD must be between 8 and 64 characters");
+  if (!result.success) {
+    throw new Error(
+      `Invalid FINANCE_* variables: ${result.error.issues[0].message}. Nothing was changed.`,
+    );
   }
 
-  const normalizedEmail = userEmail.toLowerCase().trim();
+  const { name, email, password } = result.data;
 
   const user = await prisma.user.findUnique({
-    where: { email: normalizedEmail },
+    where: { email },
     select: { role: true },
   });
 
@@ -28,14 +37,14 @@ async function createUser() {
     );
   }
 
-  const hashPassword = await argon2.hash(userPassword);
+  const hashPassword = await argon2.hash(password);
 
   await prisma.user.upsert({
-    where: { email: normalizedEmail },
+    where: { email },
     update: { passwordHash: hashPassword },
     create: {
-      email: normalizedEmail,
-      name: userName,
+      email,
+      name,
       passwordHash: hashPassword,
       role: "FINANCE",
     },
